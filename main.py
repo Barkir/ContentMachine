@@ -5,7 +5,8 @@ from constants import *
 loaded = load_dotenv(find_dotenv())  
 
 youtube_sheet = GoogleSheetsAPI(sheet_name=YOUTUBE_SHEET_NAME)
-youtube_sheet.get_channel_info(3)
+info = youtube_sheet.get_channel_info(3)
+print(info)
 # instagram_sheet = GoogleSheetsAPI(sheet_name=INSTAGRAM_SHEET_NAME)
 # tiktok_sheet = GoogleSheetsAPI(sheet_name=TIKTOK_SHEET_NAME)
 # twitter_sheet = GoogleSheetsAPI(sheet_name=TWITTER_SHEET_NAME)
