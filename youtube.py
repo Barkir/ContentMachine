@@ -20,7 +20,8 @@ class YouTubeAPI:
         try:
             res = self.yt.search().list(
                 part='snippet',
-                channelId=channel_id
+                type='channel',
+                q=channel_id
             ).execute()
             items = res.get('items', [])
             if not items:
@@ -32,27 +33,9 @@ class YouTubeAPI:
             print(f"Error {e}")
     
     def parse_channel_input(self, s: str):
-        s = s.strip()
-        # UC… (готовый channelId)
-        if re.fullmatch(r"UC[\w-]{22}", s):
-            return {"channel_id": s}
-
-        # URL вида /channel/UC..., /@handle, /user/..., /c/...
-        if "youtube.com" in s:
-            # /channel/UC...
-            m = re.search(r"/channel/(UC[\w-]{22})", s)
-            if m:
-                return {"channel_id": m.group(1)}
-            # /@handle
-            m = re.search(r"youtube\.com/@([A-Za-z0-9_.-]+)", s)
-            if m:
-                return {"handle": m.group(1)}
-            # кастомные /c/... или /user/... — оставим как поисковый запрос
-            return {"query": s}
-
-        # @handle
-        if s.startswith("@"):
-            return {"handle": s[1:]}
-
-        # Иначе — это произвольное имя, поиск
-        return {"query": s}
+        splitted = s.split('/')
+        if len(splitted) > 1 and splitted[-1].startswith('@'):
+            return splitted[-1]
+        print(f"Invalid channel ID format: {s}")
+        return None
+        
