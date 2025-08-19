@@ -3,15 +3,19 @@ from google.oauth2.service_account import Credentials
 import os
 from dotenv import load_dotenv
 
-SHEET_HEADERS = ["Name", "URL"]
+from youtube import YouTubeAPI
+
 
 
 
 class GoogleSheetsAPI:
-    def __init__(self):
+
+    SHEET_HEADERS = ["Name", "URL"]
+
+    def __init__(self, sheet_name="sheet"):
         self.credentials_file = os.getenv('GOOGLE_CREDENTIALS_FILE')
         self.sheet_id = os.getenv('GOOGLE_SHEET_ID')
-        self.sheet_name = os.getenv('GOOGLE_SHEET_NAME')
+        self.sheet_name = sheet_name
 
         self.scope = [
             'https://www.googleapis.com/auth/spreadsheets',
@@ -33,21 +37,32 @@ class GoogleSheetsAPI:
         except Exception as e:
             print(f"Error authenticating with Google Sheets: {e}")
             return None
-        
+        SHEET_HEADERS = ["Name", "URL"]
+
     def init_sheet(self):
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
             try:
                 self.worksheet = spreadsheet.worksheet(self.sheet_name)
                 print(f"Worksheet '{self.sheet_name}' already exists.")
-            except gspread.WorksheetNotFound:
-                self.worksheet = spreadsheet.add_worksheet(title=self.sheet_name, rows="100", cols="20")
-                self.worksheet.append_row(SHEET_HEADERS)
+            except:
+                self.worksheet = spreadsheet.add_worksheet(
+                    title=self.sheet_name, rows="100", cols="20"
+                )
                 print(f"Worksheet '{self.sheet_name}' created successfully.")
+            existing_headers = self.worksheet.row_values(1) 
+            if not existing_headers:  
+                self.worksheet.append_row(self.SHEET_HEADERS)
+                print(f"Headers inserted: {self.SHEET_HEADERS}")
+            else:
+                print(f"Headers already present: {existing_headers}")
+
             return self.worksheet
         except Exception as e:
-            print(f"Error initializing Google Sheet: {e}")
+            print(f"Error initializing Google Sheet:")
+            traceback.print_exc()
             return None
+
     
     def get_sheet_headers(self):
         if self.worksheet:
@@ -73,6 +88,9 @@ class GoogleSheetsAPI:
             except gspread.exceptions.CellNotFound:
                 print(f"Cell at row {row_line} not found.")
                 return None
+        
+    def get_channel_info(self, row):
+        return YouTubeAPI().get_channel_info(self.get_channel_url(row))
 
             
         
