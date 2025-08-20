@@ -19,10 +19,9 @@ class YouTubeAPI:
         channel_id = self.parse_channel_input(channel_id)
         print(channel_id)
         try:
-            res = self.yt.search().list(
+            res = self.yt.channels().list(
                 part='snippet',
-                type='channel',
-                q=channel_id
+                forHandle=channel_id
             ).execute()
             if not res.get('items'):
                 print("No channel found with the provided ID.")
@@ -83,8 +82,10 @@ class YouTubeAPI:
             print("No items found for the channel.")
             return None
         print(f"Items found: {len(items)}")
-        # pprint(items)
-        found_channel_id = items[0].get('id')["channelId"]
+        pprint(items)
+        found_channel_id = items[0].get('id')
+        print(f"channelId = {found_channel_id}")
+        
         res = self.yt.channels().list(
             part='snippet,contentDetails,statistics',
             id=found_channel_id
@@ -93,6 +94,7 @@ class YouTubeAPI:
             print("No channel details found.")
             return None
         
+        print("returning res")
         return res["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
 
     

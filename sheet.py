@@ -84,7 +84,7 @@ class GoogleSheetsAPI:
     def get_channel_name(self, row_line):
         worksheet = self.spreadsheet.worksheet(self.sheet_name)
         try:
-            return self.worksheet.cell(row_line, 1).value
+            return worksheet.cell(row_line, 1).value
         except gspread.exceptions.CellNotFound:
             print(f"Cell at row {row_line} not found.")
             return None
@@ -111,6 +111,7 @@ class GoogleSheetsAPI:
         if sheet_name == None:
             return None
         try:
+            print(f"sheet_name ={sheet_name}")
             self.worksheet = self.spreadsheet.worksheet(sheet_name)
             print("Worksheet already exists")
         except:
