@@ -2,3 +2,4 @@ YOUTUBE_SHEET_NAME ="youtube"
 INSTAGRAM_SHEET_NAME = "instagram"
 TIKTOK_SHEET_NAME = "tiktok"
 TWITTER_SHEET_NAME = "twitter"
+START_FROM = 2
