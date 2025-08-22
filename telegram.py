@@ -14,4 +14,32 @@
 # if it is an idea for a post then
 #   call a function to turn idea to post
 #   send it to the user and get the approve
-#   post it
+#   post it5е
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+def data_is_link(data):
+    pass
+
+class TelegramAssistant:
+    def __init__(self):
+        self.openai_audio_api = os.getenv("OPENAI_AUDIO_KEY")
+        self.bot_token = os.getenv("TG_BOT_TOKEN")
+
+    def transcribe_from_link(self, link):
+        # video = download_video_by_link(ling)
+        # audio = get_audio_from_video(video)
+        # text = some_command_from_openai(audio)
+        # return text
+        
+        pass
+
+    def text_to_post(self, text):
+        pass
+
+    def get_data(self, data):
+        result = self.transcribe_msg(data) if data_is_link(data) else self.text_to_post(data)
+        # printResulttotgChannel(result)
+            

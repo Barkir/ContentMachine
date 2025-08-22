@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from googleapiclient.discovery import build 
 import re
 from pprint import pprint
+import yt_dlp
+from constants import * 
 
 load_dotenv()
 
@@ -96,8 +98,31 @@ class YouTubeAPI:
         
         print("returning res")
         return res["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
-
     
+    def download_video(self, url, output_path=VIDEOS_PATH):
+        ydl_opts = {
+            "outtmpl": output_path + "%(title)s.%(ext)s",
+            "format": "worstvideo"
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                print(f"Downloaded: {info.get("title", "Unknown")}")
+        except Exception as e:
+            print(f"Error: {e}")
+        
+    def download_audio(self, url, output_path=AUDIOS_PATH):
+        ydl_opts = {
+            "outtmpl": output_path + "%(title)s.%(ext)s",
+            "format": "bestaudio"
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                print(f"Downloaded: {info.get("title", "Unknown")}")
+        except Exception as e:
+            print(f"Error: {e}")
+     
     def parse_channel_input(self, s: str):
         splitted = s.split('/')
         if len(splitted) > 1 and splitted[-1].startswith('@'):

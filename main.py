@@ -2,6 +2,7 @@ from sheet import GoogleSheetsAPI
 from dotenv import load_dotenv, find_dotenv
 from constants import *
 from pprint import pprint
+from youtube import YouTubeAPI
 
 loaded = load_dotenv(find_dotenv())  
 
@@ -13,8 +14,11 @@ loaded = load_dotenv(find_dotenv())
 
 youtube_sheet = GoogleSheetsAPI(sheet_name=YOUTUBE_SHEET_NAME)
 num_rows = 10
+youtubeObj = YouTubeAPI()
+youtubeObj.download_video("https://www.youtube.com/watch?v=eJHDIQaHZfs")
+youtubeObj.download_audio("https://www.youtube.com/watch?v=eJHDIQaHZfs")
 
-for i in range(START_FROM, num_rows+START_FROM):
-    youtube_sheet.create_new_sheet(youtube_sheet.get_channel_name(i))
-    info = youtube_sheet.get_channel_info(i, videos=10)
-    youtube_sheet.append_rows(info)
+# for i in range(START_FROM, num_rows+START_FROM):
+#     youtube_sheet.create_new_sheet(youtube_sheet.get_channel_name(i))
+#     info = youtube_sheet.get_channel_info(i, videos=10)
+#     youtube_sheet.append_rows(info)
