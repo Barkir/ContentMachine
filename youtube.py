@@ -98,6 +98,32 @@ class YouTubeAPI:
         
         print("returning res")
         return res["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+    def _try_download(self, url: str, player_client: str | None, use_cookies: bool) -> str | None:
+        ydl_opts = {
+            "quiet": True,
+            "noprogress": True,
+            "format": "bestaudio/best",
+            "outtmpl": f"{AUDIOS_PATH}/%(id)s.%(ext)s",
+            "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3", "preferredquality": "192"}],
+        }
+
+        # переключаем client-профиль
+        if player_client:
+            ydl_opts["extractor_args"] = {"youtube": {"player_client": [player_client]}}
+
+        # cookies из браузера (если хочется)
+        if use_cookies:
+            # подставь свой браузер: "chrome", "firefox", "edge"
+            ydl_opts["cookiesfrombrowser"] = ("firefox",)
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                return ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp3"
+        except Exception as e:
+            print(f"[yt-dlp/{player_client or 'default'}] {e}")
+            return None
     
     def download_video(self, url, output_path=VIDEOS_PATH):
         ydl_opts = {
@@ -112,18 +138,23 @@ class YouTubeAPI:
             print(f"Error: {e}")
         
     def download_audio(self, url, output_path=AUDIOS_PATH):
-        ydl_opts = {
-            "outtmpl": output_path + "%(title)s.%(ext)s",
-            "format": "bestaudio"
-        }
-        try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=True)
-                print(f"Downloaded: {info.get("title", "Unknown")}")
-                return info.get("title", "Unknown") + "." + info.get("ext", "mp4")
-        except Exception as e:
-            print(f"Error: {e}")
-            return None
+                # 1) самый простой — без cookies, дефолтный клиент
+        order = [
+            (None, False),
+            ("android", False),
+            ("web", False),
+            ("ios", False),
+            # 2) если всё ещё не вышло — пробуем с cookies браузера
+            (None, True),
+            ("android", True),
+            ("web", True),
+            ("ios", True),
+        ]
+        for client, use_cookies in order:
+            path = self._try_download(url, client, use_cookies)
+            if path:
+                return path
+        raise RuntimeError("Не удалось скачать аудио. Нужны cookies/регион или ролик недоступен.")
      
     def parse_channel_input(self, s: str):
         splitted = s.split('/')

@@ -34,12 +34,13 @@ def data_is_link(data: str) -> bool:
 
 class TelegramAssistant:
     def __init__(self):
-        self.openai_audio_api = os.getenv("OPENAI_AUDIO_KEY")
+        self.openai_audio_api = os.getenv("OPENAI_API_KEY")
         self.bot_token = os.getenv("TG_BOT_TOKEN")
         self.channel_id = os.getenv("TG_CHANNEL_ID")
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
 
         # --- OpenAI / Youtube ---
-        self.openai_client = OpenAI()
+        self.openai_client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=self.openai_api_key)
         self.yt_client = YouTubeAPI()
 
         # --- PTB Application (async) ---
@@ -49,11 +50,14 @@ class TelegramAssistant:
     def transcribe_from_link(self, link, save=True):
         audio_name = self.yt_client.download_audio(link)
         with open(audio_name, "rb") as f:
-            transcript = self.openai_client.audio.transcriptions.create(
-                model="gpt-4o-mini-transcribe",
-                file=f)
+            transcript = self.openai_client.chat.completions.create(
+                model="openai/gpt-4o-audio-preview",
+                messages=[
+                    {"role": "user", "content": "Please transcribe the following audio."}
+                ],
+                audio={"file": f, "mimetype": "audio/mpeg"})
         
-        text = transcript.text
+        text = transcript.choices[0].message.content.strip()
         if save:
             txt_name = audio_name.rsplit(".", 1)[0] + ".txt"
             with open(txt_name, "w", encoding="utf-8") as txt_file:
@@ -76,7 +80,12 @@ class TelegramAssistant:
         return post
 
     def get_data(self, data):
-        result = self.transcribe_from_link(data) if data_is_link(data) else self.text_to_post(data)
+        if data_is_link(data):
+            print("It's a link!")
+            text = self.transcribe_from_link(data)
+            return self.text_to_post(text)
+        else:
+            return self.text_to_post(data)
     
     def _split_text(self, text, max_length=4096):
         paragraphs = text.split('\n')
