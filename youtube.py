@@ -120,8 +120,10 @@ class YouTubeAPI:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
                 print(f"Downloaded: {info.get("title", "Unknown")}")
+                return info.get("title", "Unknown") + "." + info.get("ext", "mp4")
         except Exception as e:
             print(f"Error: {e}")
+            return None
      
     def parse_channel_input(self, s: str):
         splitted = s.split('/')
