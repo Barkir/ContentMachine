@@ -21,7 +21,10 @@ from youtube import YouTubeAPI
 from constants import *
 import os
 import re
+import base64
 
+
+from langchain_openai import ChatOpenAI
 from telegram import InputFile
 from telegram.constants import ParseMode
 from telegram.ext import Application, AIORateLimiter
@@ -49,21 +52,30 @@ class TelegramAssistant:
     # save param for saving audio file locally or not
     def transcribe_from_link(self, link, save=True):
         audio_name = self.yt_client.download_audio(link)
+
+        llm = ChatOpenAI(base_url="https://openrouter.ai/api/v1",
+            model="gpt-4o-audio-preview",
+            temperature=0,
+            max_completion_tokens=None,
+            timeout=None,
+            max_retries=2
+        )
         with open(audio_name, "rb") as f:
-            transcript = self.openai_client.chat.completions.create(
-                model="openai/gpt-4o-audio-preview",
-                messages=[
-                    {"role": "user", "content": "Please transcribe the following audio."}
-                ],
-                audio={"file": f, "mimetype": "audio/mpeg"})
+            audio_data = f.read()
+            audio_b64 = base64.b64encode(audio_data).decode()
+
+            messages = [
+                    (
+                        "human",
+                        [
+                            {"type": "text", "text": "Transcribe the following"},
+                            {"type": "input_audio", "input_audio": {"data": audio_b64, "format": "mp3"}},
+                        ],
+                    )
+            ]
         
-        text = transcript.choices[0].message.content.strip()
-        if save:
-            txt_name = audio_name.rsplit(".", 1)[0] + ".txt"
-            with open(txt_name, "w", encoding="utf-8") as txt_file:
-                txt_file.write(text)
-        
-        return text
+        output = llm.invoke(messages)
+        return output.content
 
     def text_to_post(self, text, prompt=POST_PROMPT):
         prompt = f"{prompt}\n\n{text}"
