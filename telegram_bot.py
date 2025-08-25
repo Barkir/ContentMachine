@@ -22,7 +22,7 @@ from constants import *
 import os
 import re
 import base64
-
+import uuid
 
 from langchain_openai import ChatOpenAI
 from telegram import InputFile
@@ -49,8 +49,12 @@ class TelegramAssistant:
         # --- PTB Application (async) ---
         self.app = Application.builder().token(self.bot_token).rate_limiter(AIORateLimiter()).build()
 
+# =============================
+# Transribing and post creation
+# =============================
+
     # save param for saving audio file locally or not
-    def transcribe_from_link(self, link, save=True):
+    def transcribe_from_link(self, link):
         audio_name = self.yt_client.download_audio(link)
 
         llm = ChatOpenAI(base_url="https://openrouter.ai/api/v1",
@@ -91,10 +95,13 @@ class TelegramAssistant:
         post = response.choices[0].message.content.strip()
         return post
 
-    def get_data(self, data):
+    def get_data(self, data, path=TRANSCRIBED_PATH):
         if data_is_link(data):
             print("It's a link!")
             text = self.transcribe_from_link(data)
+            filename = f"{path}{uuid.uuid4()}.txt"
+            with open(filename, "w") as f:
+                f.write(data + "\n" + text)
             return self.text_to_post(text)
         else:
             return self.text_to_post(data)
