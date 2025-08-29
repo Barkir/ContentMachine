@@ -19,6 +19,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from youtube import YouTubeAPI
 from constants import *
+import requests
+import json
 import os
 import re
 import base64
@@ -94,6 +96,24 @@ class TelegramAssistant:
         )
         post = response.choices[0].message.content.strip()
         return post
+
+    def text_to_image(self, text, prompt=IMAGE_PROMPT):
+        image_prompt = self.text_to_post(text, prompt=prompt)
+        
+        prompt = f"{image_prompt}\n\n{text}"
+        completion = self.openai_client.chat.completions.create(
+            model="google/gemini-2.5-flash-image-preview:free",
+            messages=[
+                {"role": "user", "content": "You are helpful assistant that creates engaging images"},
+                {"role": "user", "content": image_prompt}
+            ]
+        )
+        print(completion.choices[0].images.url)
+
+
+
+
+
 
     def get_data(self, data, path=TRANSCRIBED_PATH):
         if data_is_link(data):

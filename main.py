@@ -14,11 +14,19 @@ loaded = load_dotenv(find_dotenv())
 # 2. Getting info about them
 # Then we create other sheet named by this channel and add info about a channel there.
 
-youtube_sheet = GoogleSheetsAPI(sheet_name=YOUTUBE_SHEET_NAME)
+# youtube_sheet = GoogleSheetsAPI(sheet_name=YOUTUBE_SHEET_NAME)
 telegram_bot = TelegramAssistant()
-link = "https://www.youtube.com/shorts/1-IYAbvqjTM"
-post_text = telegram_bot.get_data(link)
-asyncio.run(telegram_bot.send_post(post_text))
+telegram_bot.text_to_image("Тяжёлый свэг, бро \
+            Оппам достаётся лишь конец, бро, о \
+            Самый лучший рэп, о \
+            Эти рэперы — я их отец, бро, а \
+            Ты не найдёшь ответ, бро \
+            Она меня троллит или нет, а? \
+            Что ты делаешь со мной? \
+            Что ты делаешь со мной?")
+# link = "https://www.youtube.com/shorts/1-IYAbvqjTM"
+# post_text = telegram_bot.get_data(link)
+# asyncio.run(telegram_bot.send_post(post_text))
 
 # num_rows = 10
 # youtubeObj = YouTubeAPI()
