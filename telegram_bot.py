@@ -108,14 +108,13 @@ class TelegramAssistant:
                 {"role": "user", "content": image_prompt}
             ]
         )
-        print(completion.choices[0].images.url)
+        data = completion.choices[0].message.images[0]['image_url']['url'].split(",")[1]
+        print(data)
+        with open('image.png', 'wb') as f:
+            f.write(base64.b64decode(data))
 
 
-
-
-
-
-    def get_data(self, data, path=TRANSCRIBED_PATH):
+    def get_text(self, data, path=TRANSCRIBED_PATH):
         if data_is_link(data):
             print("It's a link!")
             text = self.transcribe_from_link(data)
@@ -169,7 +168,7 @@ class TelegramAssistant:
                     parse_mode=parse_mode
                 )
     async def post_to_channel(self, data, image_path=None):
-        post_text = self.get_data(data)
+        post_text = self.get_text(data)
         if image_path:
             await self.send_image(image_path, caption=post_text)
         else:

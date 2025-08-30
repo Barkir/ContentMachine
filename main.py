@@ -16,16 +16,8 @@ loaded = load_dotenv(find_dotenv())
 
 # youtube_sheet = GoogleSheetsAPI(sheet_name=YOUTUBE_SHEET_NAME)
 telegram_bot = TelegramAssistant()
-telegram_bot.text_to_image("Тяжёлый свэг, бро \
-            Оппам достаётся лишь конец, бро, о \
-            Самый лучший рэп, о \
-            Эти рэперы — я их отец, бро, а \
-            Ты не найдёшь ответ, бро \
-            Она меня троллит или нет, а? \
-            Что ты делаешь со мной? \
-            Что ты делаешь со мной?")
-# link = "https://www.youtube.com/shorts/1-IYAbvqjTM"
-# post_text = telegram_bot.get_data(link)
+link = "https://www.youtube.com/shorts/pNOrDC8NyEo"
+post_text = telegram_bot.text_to_image(telegram_bot.get_text(link))
 # asyncio.run(telegram_bot.send_post(post_text))
 
 # num_rows = 10
