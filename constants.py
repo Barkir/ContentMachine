@@ -5,7 +5,9 @@ TWITTER_SHEET_NAME="twitter"
 DOWNLOADS_PATH="/home/kirill/Side-Projects/ContentMachine/downloads/"
 AUDIOS_PATH=DOWNLOADS_PATH+"audios/"
 VIDEOS_PATH=DOWNLOADS_PATH+"videos/"
-TRANSCRIBED_PATH="openai_data/"
+TRANSCRIBED_PATH="transcribed/"
+POSTS_PATH="posts/"
+POSTS_IMAGES_PATH="posts_images/"
 START_FROM = 2
 
 POST_PROMPT="Создай детальный пост в телеграме по этому тексту. Используй меньше стикеров и эмодзи." \

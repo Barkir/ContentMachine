@@ -17,7 +17,7 @@ loaded = load_dotenv(find_dotenv())
 # youtube_sheet = GoogleSheetsAPI(sheet_name=YOUTUBE_SHEET_NAME)
 telegram_bot = TelegramAssistant()
 link = "https://www.youtube.com/shorts/pNOrDC8NyEo"
-post_text = telegram_bot.text_to_image(telegram_bot.get_text(link))
+post_text = telegram_bot.initialize_telegram_post(link, with_image=True)
 # asyncio.run(telegram_bot.send_post(post_text))
 
 # num_rows = 10

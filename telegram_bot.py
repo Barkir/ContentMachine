@@ -14,13 +14,18 @@
 # if it is an idea for a post then
 #   call a function to turn idea to post
 #   send it to the user and get the approve
-#   post it5е
+#   post it
+
+
+
+# How to better organize same filenames
+# Ok, maybe we want to generate a post.
+# We need a functions that generates us a post. And goes through pipeline.
+# We create a uuid code in this function and pass it as an argument in other help functions.
 from dotenv import load_dotenv
 from openai import OpenAI
 from youtube import YouTubeAPI
 from constants import *
-import requests
-import json
 import os
 import re
 import base64
@@ -51,14 +56,33 @@ class TelegramAssistant:
         # --- PTB Application (async) ---
         self.app = Application.builder().token(self.bot_token).rate_limiter(AIORateLimiter()).build()
 
-# =============================
-# Transribing and post creation
-# =============================
+# =========================================
+# Full post pipeline
+# =========================================
+    def initialize_telegram_post(self, data, with_image=False):
+        uuid_code = uuid.uuid4() # generated a unique filename for data
 
-    # save param for saving audio file locally or not
-    def transcribe_from_link(self, link):
+        text = self.transcribe_from_link(data, uuid_code) if data_is_link(data) else self.text_to_post(data, uuid_code)
+        
+        if with_image:
+            self.text_to_image(text, uuid_code)
+            self.post_to_channel(text, image_path=f"{POSTS_IMAGES_PATH}{uuid_code}.png")
+            return True
+
+        elif not with_image:
+            self.post_to_channel(text)
+            return True
+
+        return False
+
+
+# ==========================================
+#  Transcribing video
+# ==========================================
+    def transcribe_from_link(self, link, uuid_code, path=TRANSCRIBED_PATH):
         audio_name = self.yt_client.download_audio(link)
 
+        # initializing llm
         llm = ChatOpenAI(base_url="https://openrouter.ai/api/v1",
             model="gpt-4o-audio-preview",
             temperature=0,
@@ -66,6 +90,8 @@ class TelegramAssistant:
             timeout=None,
             max_retries=2
         )
+
+        # encoding data for llm
         with open(audio_name, "rb") as f:
             audio_data = f.read()
             audio_b64 = base64.b64encode(audio_data).decode()
@@ -81,9 +107,18 @@ class TelegramAssistant:
             ]
         
         output = llm.invoke(messages)
+
+        # writing data to file
+        with open(f"{path}{uuid_code}.transcribed", "w") as f:
+            f.write(output.content)
+
         return output.content
 
-    def text_to_post(self, text, prompt=POST_PROMPT):
+
+# ==========================================
+#  Creating post from text
+# ==========================================
+    def text_to_post(self, text, uuid_code, path=POSTS_PATH, prompt=POST_PROMPT):
         prompt = f"{prompt}\n\n{text}"
         response = self.openai_client.chat.completions.create(
             model="gpt-4o-mini",
@@ -95,10 +130,17 @@ class TelegramAssistant:
             temperature=0.7
         )
         post = response.choices[0].message.content.strip()
-        return post
+        with open(f"{path}{uuid_code}.post", "w") as f:
+            f.write(post)
 
-    def text_to_image(self, text, prompt=IMAGE_PROMPT):
-        image_prompt = self.text_to_post(text, prompt=prompt)
+        return post
+    
+
+# ==========================================
+#  Creating image from text
+# ==========================================
+    def text_to_image(self, text, uuid_code, path=POSTS_IMAGES_PATH, prompt=IMAGE_PROMPT):
+        image_prompt = self.text_to_post(text, uuid_code, prompt=prompt)
         
         prompt = f"{image_prompt}\n\n{text}"
         completion = self.openai_client.chat.completions.create(
@@ -109,21 +151,11 @@ class TelegramAssistant:
             ]
         )
         data = completion.choices[0].message.images[0]['image_url']['url'].split(",")[1]
-        print(data)
-        with open('image.png', 'wb') as f:
+        with open(f"{path}{uuid_code}.png", 'wb') as f:
             f.write(base64.b64decode(data))
-
-
-    def get_text(self, data, path=TRANSCRIBED_PATH):
-        if data_is_link(data):
-            print("It's a link!")
-            text = self.transcribe_from_link(data)
-            filename = f"{path}{uuid.uuid4()}.txt"
-            with open(filename, "w") as f:
-                f.write(data + "\n" + text)
-            return self.text_to_post(text)
-        else:
-            return self.text_to_post(data)
+        
+        return data
+    
     
     def _split_text(self, text, max_length=4096):
         paragraphs = text.split('\n')
