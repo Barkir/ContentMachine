@@ -30,6 +30,7 @@ import os
 import re
 import base64
 import uuid
+import asyncio
 
 from langchain_openai import ChatOpenAI
 from telegram import InputFile
@@ -62,15 +63,20 @@ class TelegramAssistant:
     def initialize_telegram_post(self, data, with_image=False):
         uuid_code = uuid.uuid4() # generated a unique filename for data
 
-        text = self.transcribe_from_link(data, uuid_code) if data_is_link(data) else self.text_to_post(data, uuid_code)
-        
+        if data_is_link(data):
+            text = self.transcribe_from_link(data, uuid_code)
+        else:
+            text = data
+
+        post = self.text_to_post(text, uuid_code)
+
         if with_image:
             self.text_to_image(text, uuid_code)
-            self.post_to_channel(text, image_path=f"{POSTS_IMAGES_PATH}{uuid_code}.png")
+            asyncio.run(self.post_to_channel(post, image_path=f"{POSTS_IMAGES_PATH}{uuid_code}.png"))
             return True
 
         elif not with_image:
-            self.post_to_channel(text)
+            self.post_to_channel(post)
             return True
 
         return False
@@ -130,7 +136,7 @@ class TelegramAssistant:
             temperature=0.7
         )
         post = response.choices[0].message.content.strip()
-        with open(f"{path}{uuid_code}.post", "w") as f:
+        with open(f"{path}{uuid_code}.post", "+a") as f:
             f.write(post)
 
         return post
@@ -200,11 +206,10 @@ class TelegramAssistant:
                     parse_mode=parse_mode
                 )
     async def post_to_channel(self, data, image_path=None):
-        post_text = self.get_text(data)
         if image_path:
-            await self.send_image(image_path, caption=post_text)
+            await self.send_image(image_path, caption=data)
         else:
-            await self.send_post(post_text)
+            await self.send_post(data)
     
     def run_polling(self):
         self.app.run_polling()
