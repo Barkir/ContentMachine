@@ -8,6 +8,8 @@ VIDEOS_PATH=DOWNLOADS_PATH+"videos/"
 TRANSCRIBED_PATH="transcribed/"
 POSTS_PATH="posts/"
 POSTS_IMAGES_PATH="posts_images/"
+TRANSCRIBED_DB_PATH="db/transcribed.db"
+TRANSCRIBED_TF_PATH="transcribed/TF/"   
 START_FROM = 2
 
 POST_PROMPT="Создай детальный пост в телеграме по этому тексту. Используй меньше стикеров и эмодзи." \
@@ -16,3 +18,4 @@ POST_PROMPT="Создай детальный пост в телеграме по
 
 IMAGE_PROMPT="Сгенерируй промпт для генерации изображения из этого текста. Изображение должно быть в художественном стиле. " \
                 "Картина должна быть нарисована масляными красками."
+
