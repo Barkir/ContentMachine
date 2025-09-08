@@ -8,7 +8,9 @@ import json
 
 import nltk
 from nltk.probability import FreqDist
+from nltk.corpus import stopwords
 
+stop_words = [k.rstrip('\n') for k in open("stopwords.txt").readlines()]
 parser = argparse.ArgumentParser(description="Script for analyzing transcribed data")
 parser.add_argument("input_file", help="Your input_file")
 
@@ -20,7 +22,8 @@ conn = sqlite3.connect(TRANSCRIBED_DB_PATH)
 cur = conn.cursor()
 
 lines = "".join(open(args.input_file, "r").readlines())
-tokens = nltk.word_tokenize(lines)
+tokens = [k for k in nltk.word_tokenize(lines) if k.isalpha()]
+tokens = [k for k in tokens if k.lower() not in stop_words]
 fdist = FreqDist(tokens)
 
 freq_data = {
